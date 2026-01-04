@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from util import extrair_estado, parse_salario, format_brl
+from .util import extrair_estado, parse_salario, format_brl
 import time
 
 def parse_vagas(driver):

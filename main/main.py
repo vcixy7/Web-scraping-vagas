@@ -1,13 +1,16 @@
-from browser import get_browser
-from scraper import parse_vagas
-from excel import salvar_excel
+import os
+import sys
+
+# Garantir que o diretório raiz do projeto esteja no sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from scraper.browser import get_browser
+from scraper.parser import parse_vagas
+from exporter.excel import salvar_excel
 import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-print("Projeto organizado corretamente")
-
 
 def main():
     cargo = input("Digite o cargo desejado: ").strip()
