@@ -63,7 +63,8 @@ web-scraping-vagas-de-emprego/
 ▶️ Como Executar o Projeto
 
 1️⃣ Clonar o repositório
-https://github.com/vcixy7/Web-scraping-de-vagas-.git
+git clone https://github.com/vcixy7/Web-scraping-de-vagas-.git
+
 cd Web-scraping-de-vagas-
 
 2️⃣ Instalar as dependências
