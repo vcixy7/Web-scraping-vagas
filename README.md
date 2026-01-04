@@ -68,10 +68,14 @@ git clone https://github.com/vcixy7/Web-scraping-vagas.git
 cd Web-scraping-de-vagas-
 
 2️⃣ Instalar as dependências
+
 pip install -r requirements.txt
 
 3️⃣ Executar o projeto
+
 python main/main.py
+**ou**
+py main/main.py
 
 4️⃣ Informar o cargo desejado
 
@@ -102,4 +106,5 @@ O projeto utiliza Selenium para simular o comportamento de um usuário real.
 👤 Autor
 
 Vinícius Araújo
+
 Estudante de tecnologia | Python | Automação | Web Scraping
