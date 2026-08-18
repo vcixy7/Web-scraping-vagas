@@ -1,131 +1,220 @@
-# Web scraping de vagas
+# Web Scraping de Vagas
 
-Projeto pessoal que fiz para praticar automação e coleta de dados com Python. Ele pesquisa um cargo em **vários sites de uma vez**, junta as vagas em um banco (sem repetir), identifica as tecnologias pedidas e ainda tem relatório e uma interface web.
+Aplicação em Python para **coleta, processamento e análise de vagas de emprego** provenientes de múltiplas fontes.
 
-Comecei só com o Indeed via Selenium e fui separando o código em módulos conforme foi crescendo. Hoje cada site é uma "fonte" plugável, os dados ficam em SQLite e dá para acompanhar tudo por um painel. É um projeto de estudo, então continua evoluindo.
+O sistema integra scraping com Selenium e APIs de vagas, normaliza os dados coletados, identifica tecnologias mencionadas nas oportunidades, evita duplicações e persiste os resultados em SQLite.
 
-## O que já funciona
+Também disponibiliza exportação para Excel, relatórios pelo terminal e um dashboard desenvolvido com Streamlit.
 
-- **Pesquisa em várias fontes ao mesmo tempo**: Indeed (Selenium), Remotive e RemoteOK (APIs públicas) e Adzuna (API oficial, opcional).
-- **Extração** de cada vaga: título, empresa, local, estado (UF), modalidade (remoto/híbrido/presencial), salário, tecnologias citadas, link e a fonte.
-- **Normalização**: tira a UF do local, padroniza a modalidade e transforma o salário em valor médio mensal em reais.
-- **Banco SQLite** (`data/vagas.db`) que **não repete** vagas (pela URL) e guarda um **histórico das pesquisas**.
-- **Relatório no terminal** (`python relatorio.py`) e **interface web** (Streamlit) com painel, gráficos (inclusive vagas por fonte) e o histórico.
-- **Exportação para Excel** (`vagas.xlsx`).
+## Funcionalidades
 
-## Fontes de vagas
+* Coleta de vagas em múltiplas fontes.
+* Integração com **Indeed, Remotive, RemoteOK e Adzuna**.
+* Extração de:
 
-Cada fonte é um módulo dentro de `fontes/`, com uma função `coletar(cargo, limite)` que devolve as vagas no mesmo formato. Para adicionar um site novo, basta criar mais um módulo assim. Hoje existem:
+  * cargo;
+  * empresa;
+  * localização;
+  * estado (UF);
+  * modalidade de trabalho;
+  * salário;
+  * tecnologias mencionadas;
+  * URL da vaga;
+  * fonte.
+* Normalização automática dos dados coletados.
+* Conversão de salários para valor médio mensal.
+* Identificação de tecnologias por palavras-chave.
+* Persistência das vagas em **SQLite**.
+* Prevenção de registros duplicados pela URL.
+* Histórico das pesquisas realizadas.
+* Exportação dos resultados para **Excel**.
+* Relatórios pelo terminal.
+* Dashboard web com **Streamlit**.
+* Arquitetura modular para inclusão de novas fontes.
 
-- **Indeed** — via Selenium (abre o Chrome). Cobertura ampla, mas depende do HTML e pode quebrar quando o site muda.
-- **Remotive** e **RemoteOK** — APIs públicas de vagas remotas de tecnologia. Não precisam de chave e são bem estáveis.
-- **Adzuna** — API oficial, cobertura ampla (inclui Brasil). Só entra em ação se você configurar as chaves grátis:
+## Fontes de dados
+
+### Indeed
+
+Coleta realizada com **Selenium**, utilizando Chrome para acessar e processar os resultados.
+
+### Remotive
+
+Integração através da API pública da plataforma, com foco em oportunidades remotas de tecnologia.
+
+### RemoteOK
+
+Integração através da API pública de vagas remotas.
+
+### Adzuna
+
+Integração opcional através da API oficial.
+
+Para utilizar essa fonte, configure as credenciais:
 
 ```bash
-# Windows (PowerShell)
-$env:ADZUNA_APP_ID="seu_id"; $env:ADZUNA_APP_KEY="sua_chave"
-# Linux / macOS
-export ADZUNA_APP_ID=seu_id ADZUNA_APP_KEY=sua_chave
+# Windows PowerShell
+$env:ADZUNA_APP_ID="seu_id"
+$env:ADZUNA_APP_KEY="sua_chave"
 ```
-(as chaves saem de graça em https://developer.adzuna.com/)
 
-### E o LinkedIn?
-
-Não incluí o LinkedIn de propósito. Ele exige login para ver as vagas de verdade, bloqueia automação de forma agressiva e o scraping vai contra os termos de uso — não compensa o risco nem seria estável. Preferi APIs públicas e a do Adzuna, que são permitidas e não quebram como HTML. Se um dia fizer sentido, é só criar um módulo novo em `fontes/`.
-
-## Como rodar
-
-Você precisa ter o Python 3 instalado (e o Google Chrome, se for usar o Indeed). O driver do Chrome é baixado automaticamente pelo `webdriver-manager`.
+Linux/macOS:
 
 ```bash
-# 1. clonar o repositório
+export ADZUNA_APP_ID="seu_id"
+export ADZUNA_APP_KEY="sua_chave"
+```
+
+## Arquitetura
+
+Cada fonte de vagas funciona como um módulo independente dentro de `fontes/`.
+
+Todos os módulos seguem uma interface semelhante:
+
+```python
+coletar(cargo, limite)
+```
+
+Isso permite adicionar novas fontes sem alterar o fluxo principal da aplicação.
+
+```text
+main/
+  main.py
+
+fontes/
+  indeed.py
+  remotive.py
+  remoteok.py
+  adzuna.py
+  comum.py
+
+scraper/
+  browser.py
+  parser.py
+  coletor.py
+  tecnologias.py
+  util.py
+
+database/
+  db.py
+  consultas.py
+
+exporter/
+  excel.py
+
+scripts/
+  coleta_agendada.py
+
+.github/workflows/
+  coleta.yml
+
+streamlit_app.py
+relatorio.py
+```
+
+### Responsabilidades
+
+* `fontes/` — integrações com as plataformas de vagas.
+* `scraper/` — scraping, parsing e processamento dos dados.
+* `database/` — persistência e consultas SQLite.
+* `exporter/` — exportação dos resultados.
+* `streamlit_app.py` — dashboard e interface web.
+* `relatorio.py` — geração de relatórios pelo terminal.
+
+## Tecnologias
+
+* Python
+* Selenium
+* Requests
+* Pandas
+* OpenPyXL
+* SQLite
+* Streamlit
+* WebDriver Manager
+* GitHub Actions
+
+## Como executar
+
+### 1. Clone o repositório
+
+```bash
 git clone https://github.com/vcixy7/Web-scraping-vagas.git
 cd Web-scraping-vagas
+```
 
-# 2. (opcional) criar um ambiente virtual
+### 2. Crie um ambiente virtual
+
+```bash
 python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # Linux / macOS
+```
 
-# 3. instalar as dependências
+Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source venv/bin/activate
+```
+
+### 3. Instale as dependências
+
+```bash
 pip install -r requirements.txt
+```
 
-# 4. executar
+### 4. Execute a coleta
+
+```bash
 python main/main.py
 ```
 
-O programa pergunta o cargo e quais fontes usar (enter = todas), coleta, guarda no banco e salva o `vagas.xlsx`. Como as fontes de API não abrem navegador, dá para pesquisar rápido sem depender do Chrome.
+Durante a execução, é possível informar o cargo pesquisado e selecionar as fontes utilizadas.
 
-Depois, para ver um resumo:
+Os resultados são armazenados no SQLite e também podem ser exportados para `vagas.xlsx`.
+
+## Relatório
+
+Para visualizar um resumo das vagas armazenadas:
 
 ```bash
 python relatorio.py
 ```
 
-Ou a interface, com a busca e o painel:
+## Dashboard
+
+Para iniciar a interface web:
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
-## Automação (modelo)
+O dashboard permite visualizar os dados coletados, gráficos, distribuição das vagas por fonte e histórico de pesquisas.
 
-Existe um script que roda a coleta sem digitar nada, lendo o cargo e as fontes de variáveis de ambiente:
+## Coleta automatizada
+
+O projeto também possui um modo de execução sem interação pelo terminal:
 
 ```bash
 COLETA_CARGO="desenvolvedor python" COLETA_FONTES="remotive,remoteok" python scripts/coleta_agendada.py
 ```
 
-E há um workflow de exemplo em `.github/workflows/coleta.yml` para rodar no GitHub Actions. Ele está configurado para rodar **só manualmente** — coletar de sites de terceiros de forma agendada pode esbarrar nos termos de uso, então deixei o agendamento comentado de propósito.
+As configurações são recebidas através de variáveis de ambiente.
 
-## Como o projeto está organizado
+Um workflow em `.github/workflows/coleta.yml` permite executar esse processo através do **GitHub Actions**.
 
-```
-main/
-  main.py            # ponto de entrada no terminal
-fontes/
-  indeed.py          # fonte Indeed (Selenium)
-  remotive.py        # fonte Remotive (API)
-  remoteok.py        # fonte RemoteOK (API)
-  adzuna.py          # fonte Adzuna (API oficial, opcional)
-  comum.py           # monta a vaga no formato padrão (normaliza + tecnologias)
-scraper/
-  browser.py         # sobe o Chrome com o Selenium (headless via HEADLESS=1)
-  parser.py          # extrai os dados de cada card do Indeed
-  coletor.py         # junta browser + parser para o Indeed
-  tecnologias.py     # identifica tecnologias citadas no texto
-  util.py            # apoio: UF, modalidade, salário e formatação em R$
-database/
-  db.py              # cria o banco SQLite e salva as vagas (sem duplicar)
-  consultas.py       # consultas de leitura para o relatório e a interface
-exporter/
-  excel.py           # salva a lista de vagas no Excel
-scripts/
-  coleta_agendada.py # coleta sem interação (lê cargo/fontes do ambiente)
-.github/workflows/
-  coleta.yml         # modelo de automação (rodar manual; ver os avisos)
-streamlit_app.py     # interface web: pesquisa + painel + histórico
-relatorio.py         # resumo das vagas no terminal
-data/
-  vagas.db           # banco criado na primeira execução (não versionado)
-```
+## Limitações
 
-## Tecnologias
+A coleta do Indeed depende da estrutura HTML da plataforma e pode exigir ajustes caso a página seja alterada.
 
-Python 3, Selenium, Requests (APIs), Pandas, OpenPyXL (Excel), WebDriver Manager, SQLite e Streamlit.
-
-## Próximos passos
-
-- Filtros na interface (por estado, modalidade, tecnologia).
-- Ler a descrição completa das vagas do Indeed (as fontes de API já trazem a descrição, então a extração de tecnologias delas é melhor).
-- Mais fontes de vagas — a arquitetura já facilita adicionar.
-- Colocar a interface no ar (deploy).
-
-## Observações
-
-A fonte do Indeed depende do HTML da página; se ele mudar, é preciso ajustar o `parser.py` (por isso ele tenta vários seletores). A identificação de tecnologias é por palavra-chave, então é uma aproximação. Sites têm termos de uso — a intenção aqui é estudo e uso pessoal, e por isso dei preferência a APIs públicas/oficiais.
+A identificação de tecnologias utiliza correspondência por palavras-chave e, portanto, representa uma aproximação baseada no conteúdo disponível nas vagas.
 
 ## Autor
 
-Vinícius Araújo — estudante de Análise e Desenvolvimento de Sistemas.
+**Vinícius Araújo**
+Análise e Desenvolvimento de Sistemas
+
 GitHub: [@vcixy7](https://github.com/vcixy7)
