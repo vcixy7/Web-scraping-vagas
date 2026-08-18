@@ -138,7 +138,7 @@ relatorio.py
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/vcixy7/Web-scraping-vagas.git
+[git clone https://github.com/vcixy7/Web-scraping-vagas.git](https://github.com/vcixy7/WebScraping.git)
 cd Web-scraping-vagas
 ```
 
