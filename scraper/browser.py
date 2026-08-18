@@ -1,4 +1,4 @@
-# importer selenim para o navegador
+# configuração e inicialização do navegador (Selenium + Chrome)
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options

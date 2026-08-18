@@ -1,4 +1,4 @@
-# importer pandas para manipulação de Excel
+# exportação das vagas para uma planilha Excel usando pandas
 import pandas as pd
 
 def salvar_excel(vagas, nome_arquivo="vagas.xlsx"):

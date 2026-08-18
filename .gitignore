@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+
+# Editores / IDEs
+.vscode/
+.idea/
+
+# Saídas geradas
+*.xlsx

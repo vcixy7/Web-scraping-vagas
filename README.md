@@ -1,110 +1,71 @@
-📊 Web Scraping de Vagas de Emprego
+# Web scraping de vagas
 
-Este projeto realiza web scraping de vagas de emprego a partir de sites de busca de vagas, coletando informações relevantes e exportando os dados para uma planilha Excel, facilitando análises e consultas.
+Projeto pessoal que fiz para praticar automação e coleta de dados com Python. Ele abre o Indeed, pesquisa por um cargo que você digita no terminal e junta as vagas encontradas em uma planilha do Excel.
 
-O objetivo do projeto é automatizar a coleta de vagas, simulando um cenário real de uso de automação em empresas de RH, recrutamento ou análise de mercado de trabalho.
+Comecei com um script único e fui separando o código em módulos conforme foi crescendo. Ainda está em evolução — a ideia é chegar em um fluxo mais completo, com banco de dados, uma interface e algumas análises —, mas por enquanto o que já funciona bem é a parte de coletar e exportar.
 
-🚀 Funcionalidades
+## O que já funciona
 
-🔍 Busca de vagas a partir de um cargo informado pelo usuário
+- Busca por cargo, informado pelo usuário no terminal.
+- Para cada vaga, coleta título, empresa, local, estado (UF), salário e link.
+- Um tratamento básico dos dados: extrai a UF a partir do texto do local e normaliza o salário — junta faixas pela média, converte valores por ano/hora/dia para o mês e formata em reais.
+- Exporta o resultado para um arquivo `vagas.xlsx`.
 
-🌎 Extração de informações como:
+## Como rodar
 
-Título da vaga
+Você precisa ter o Python 3 e o Google Chrome instalados. O driver do Chrome é baixado automaticamente pelo `webdriver-manager`, então não precisa configurar nada à mão.
 
-Empresa
-
-Estado (UF)
-
-Salário (quando disponível)
-
-📄 Exportação automática dos dados para arquivo Excel (.xlsx)
-
-🧩 Estrutura de projeto modular e organizada
-
-🛠️ Tecnologias Utilizadas
-
-Python 3
-
-Selenium – automação do navegador
-
-Pandas – manipulação de dados
-
-OpenPyXL – geração de planilhas Excel
-
-WebDriver Manager – gerenciamento do driver do navegador
-
-Git & GitHub – versionamento e portfólio
-
-📁 Estrutura do Projeto
-web-scraping-vagas-de-emprego/
-
-│
-├── main/
-
-│   └── main.py               # Arquivo principal do projeto
-│
-
-├── scraper/
-
-│   ├── browser.py            # Configuração do navegador (Selenium)
-
-│   └── parser.py             # Extração e tratamento das vagas
-│
-
-├── exporter/
-
-│   └── excel.py              # Exportação dos dados para Excel
-
-├── requirements.txt          # Dependências do projeto
-
-└── README.md                 # Documentação
-
-▶️ Como Executar o Projeto
-
-1️⃣ Clonar o repositório
+```bash
+# 1. clonar o repositório
 git clone https://github.com/vcixy7/Web-scraping-vagas.git
+cd Web-scraping-vagas
 
-cd Web-scraping-de-vagas-
+# 2. (opcional) criar um ambiente virtual
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Linux / macOS
 
-2️⃣ Instalar as dependências
-
+# 3. instalar as dependências
 pip install -r requirements.txt
 
-3️⃣ Executar o projeto
-
+# 4. executar
 python main/main.py
-**ou**
-py main/main.py
+```
 
-4️⃣ Informar o cargo desejado
+O programa pede o cargo, abre o navegador, faz a coleta e salva o `vagas.xlsx` na pasta onde você rodou o comando.
 
-O programa solicitará o cargo e iniciará a busca automaticamente.
+## Como o projeto está organizado
 
-📊 Resultado
+```
+main/
+  main.py       # ponto de entrada: pede o cargo, monta a busca e chama o resto
+scraper/
+  browser.py    # sobe o Chrome com o Selenium
+  parser.py     # varre os cards da página e extrai os dados de cada vaga
+  util.py       # funções de apoio: UF, salário e formatação em R$
+exporter/
+  excel.py      # salva a lista de vagas no Excel
+```
 
-Ao final da execução, será gerado um arquivo Excel (.xlsx) contendo as vagas encontradas, incluindo cargo, empresa, estado e salário (quando disponível).
+## Tecnologias
 
-🎯 Objetivo do Projeto
+Python 3, Selenium (automação do navegador), Pandas, OpenPyXL (geração do Excel) e WebDriver Manager (para o driver do Chrome).
 
-Este projeto foi desenvolvido com foco em:
+## Próximos passos
 
-Aprendizado prático de web scraping
+Coisas que pretendo fazer conforme for aprendendo:
 
-Organização de código em projetos Python
+- Guardar as vagas em um banco de dados (começando com SQLite), em vez de depender só do Excel.
+- Evitar salvar a mesma vaga duas vezes, usando o link como referência.
+- Uma interface simples para pesquisar sem precisar do terminal (provavelmente com Streamlit).
+- Identificar as tecnologias citadas nas descrições (Java, Python, SQL...) para ver o que aparece com mais frequência.
+- Alguns gráficos e análises em cima dos dados coletados.
 
-Automação aplicada a problemas reais
+## Observações
 
-Construção de portfólio profissional
+A coleta depende do HTML do Indeed. Se a página mudar, os seletores podem parar de funcionar e é preciso ajustar o `parser.py` — por isso o `parser` tenta vários seletores antes de desistir. Uso o Selenium justamente para dar conta do carregamento dinâmico. Vale lembrar também que sites têm termos de uso; aqui a intenção é estudo e uso pessoal.
 
-📌 Observações
+## Autor
 
-Alguns sites podem aplicar bloqueios ou limitações ao scraping.
-
-O projeto utiliza Selenium para simular o comportamento de um usuário real.
-
-👤 Autor
-
-Vinícius Araújo
-
-Estudante de tecnologia | Python | Automação | Web Scraping
+Vinícius Araújo — estudante de Análise e Desenvolvimento de Sistemas.
+GitHub: [@vcixy7](https://github.com/vcixy7)
