@@ -1,7 +1,7 @@
 # exportação das vagas para uma planilha Excel usando pandas
 import pandas as pd
 
-COLUNAS = ["Título", "Empresa", "Local", "Estado (UF)", "Modalidade", "Salário", "Tecnologias", "Link"]
+COLUNAS = ["Título", "Empresa", "Local", "Estado (UF)", "Modalidade", "Salário", "Tecnologias", "Fonte", "Link"]
 
 
 def salvar_excel(vagas, nome_arquivo="vagas.xlsx"):
@@ -15,6 +15,7 @@ def salvar_excel(vagas, nome_arquivo="vagas.xlsx"):
             "Modalidade": vaga.get("modalidade"),
             "Salário": vaga.get("salario_texto"),
             "Tecnologias": ", ".join(vaga.get("tecnologias", [])),
+            "Fonte": vaga.get("fonte"),
             "Link": vaga.get("url"),
         })
     df = pd.DataFrame(linhas, columns=COLUNAS)

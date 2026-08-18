@@ -3,3 +3,4 @@ pandas
 openpyxl
 webdriver-manager
 streamlit
+requests

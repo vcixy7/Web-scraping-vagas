@@ -23,6 +23,7 @@ def _migrar(conexao):
     """Adiciona colunas novas em bancos que já existiam antes destas mudanças."""
     novas_colunas = [
         ("vagas", "modalidade", "TEXT"),
+        ("vagas", "fonte", "TEXT"),
         ("vagas", "pesquisa_id", "INTEGER"),
         ("pesquisas", "total_coletadas", "INTEGER"),
         ("pesquisas", "novas", "INTEGER"),
@@ -60,6 +61,7 @@ def iniciar_banco():
             salario       REAL,
             salario_texto TEXT,
             url           TEXT UNIQUE,
+            fonte         TEXT,
             coletada_em   TEXT,
             pesquisa_id   INTEGER REFERENCES pesquisas(id)
         );
@@ -122,8 +124,8 @@ def salvar_vagas(vagas, pesquisa_id=None):
         cursor.execute(
             """
             INSERT OR IGNORE INTO vagas
-                (titulo, empresa_id, local, estado, modalidade, salario, salario_texto, url, coletada_em, pesquisa_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (titulo, empresa_id, local, estado, modalidade, salario, salario_texto, url, fonte, coletada_em, pesquisa_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 vaga.get("titulo"),
@@ -134,6 +136,7 @@ def salvar_vagas(vagas, pesquisa_id=None):
                 vaga.get("salario"),
                 vaga.get("salario_texto"),
                 url,
+                vaga.get("fonte"),
                 datetime.now().isoformat(timespec="seconds"),
                 pesquisa_id,
             ),

@@ -69,6 +69,20 @@ def vagas_por_modalidade():
     return linhas
 
 
+def vagas_por_fonte():
+    conexao = get_conexao()
+    linhas = conexao.execute(
+        """
+        SELECT COALESCE(fonte, 'desconhecida') AS fonte, COUNT(*) AS qtd
+        FROM vagas
+        GROUP BY fonte
+        ORDER BY qtd DESC
+        """
+    ).fetchall()
+    conexao.close()
+    return linhas
+
+
 def top_tecnologias(limite=10):
     conexao = get_conexao()
     linhas = conexao.execute(
@@ -120,7 +134,7 @@ def vagas_da_pesquisa(pesquisa_id):
     conexao = get_conexao()
     linhas = conexao.execute(
         """
-        SELECT v.titulo, e.nome, v.local, v.estado, v.modalidade, v.salario_texto, v.url
+        SELECT v.titulo, e.nome, v.local, v.estado, v.modalidade, v.salario_texto, v.fonte, v.url
         FROM vagas v
         JOIN empresas e ON e.id = v.empresa_id
         WHERE v.pesquisa_id = ?

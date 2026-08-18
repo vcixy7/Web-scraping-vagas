@@ -21,7 +21,7 @@ def normalizar_modalidade(texto):
 
     t = texto.lower()
 
-    if any(p in t for p in ("remoto", "home office", "home-office", "à distância", "a distancia", "teletrabalho")):
+    if any(p in t for p in ("remoto", "remote", "home office", "home-office", "à distância", "a distancia", "teletrabalho")):
         return "Remoto"
     if any(p in t for p in ("híbrido", "hibrido")):
         return "Híbrido"

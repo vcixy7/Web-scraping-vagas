@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
 import streamlit as st
 
-from scraper.coletor import coletar
+import fontes
 from scraper.util import format_brl
 from exporter.excel import salvar_excel
 from database.db import iniciar_banco, registrar_pesquisa, salvar_vagas
@@ -18,7 +18,7 @@ st.set_page_config(page_title="Coleta de vagas", layout="wide")
 iniciar_banco()
 
 st.title("Coleta de vagas")
-st.caption("Pesquise um cargo e colete as vagas do Indeed. Os resultados ficam guardados no banco.")
+st.caption("Pesquise um cargo em várias fontes de uma vez. Os resultados ficam guardados no banco.")
 
 
 def tabela_vagas(vagas):
@@ -30,17 +30,26 @@ def tabela_vagas(vagas):
         "Modalidade": v.get("modalidade"),
         "Salário": v.get("salario_texto"),
         "Tecnologias": ", ".join(v.get("tecnologias", [])),
+        "Fonte": v.get("fonte"),
         "Link": v.get("url"),
     } for v in vagas])
 
 
 # --- pesquisa ---
-cargo = st.text_input("Cargo", placeholder="ex.: desenvolvedor python")
+disponiveis = fontes.nomes()
+padrao = [f for f in ("remotive", "remoteok") if f in disponiveis]
 
-if st.button("Pesquisar", type="primary") and cargo.strip():
-    with st.spinner("Coletando vagas... o navegador vai abrir, aguarde."):
+col_cargo, col_fontes = st.columns([2, 3])
+cargo = col_cargo.text_input("Cargo", placeholder="ex.: desenvolvedor python")
+selecionadas = col_fontes.multiselect(
+    "Fontes", disponiveis, default=padrao,
+    help="O Indeed abre o Chrome; as demais usam API e são mais rápidas.",
+)
+
+if st.button("Pesquisar", type="primary") and cargo.strip() and selecionadas:
+    with st.spinner("Coletando vagas nas fontes escolhidas..."):
         pesquisa_id = registrar_pesquisa(cargo.strip())
-        vagas = coletar(cargo.strip())
+        vagas = fontes.coletar_de(cargo.strip(), selecionadas)
 
     if vagas:
         novas, duplicadas = salvar_vagas(vagas, pesquisa_id=pesquisa_id)
@@ -73,6 +82,11 @@ with col_esq:
     if por_modalidade:
         st.subheader("Vagas por modalidade")
         st.bar_chart(pd.DataFrame(por_modalidade, columns=["Modalidade", "Vagas"]).set_index("Modalidade"))
+
+    por_fonte = consultas.vagas_por_fonte()
+    if por_fonte:
+        st.subheader("Vagas por fonte")
+        st.bar_chart(pd.DataFrame(por_fonte, columns=["Fonte", "Vagas"]).set_index("Fonte"))
 
 with col_dir:
     tecnologias = consultas.top_tecnologias(limite=10)
@@ -107,7 +121,10 @@ else:
     if escolha:
         vagas = consultas.vagas_da_pesquisa(opcoes[escolha])
         if vagas:
-            df = pd.DataFrame(vagas, columns=["Título", "Empresa", "Local", "UF", "Modalidade", "Salário", "Link"])
+            df = pd.DataFrame(
+                vagas,
+                columns=["Título", "Empresa", "Local", "UF", "Modalidade", "Salário", "Fonte", "Link"],
+            )
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
             st.write("Essa pesquisa não guardou vagas novas (podem ter sido todas duplicadas).")

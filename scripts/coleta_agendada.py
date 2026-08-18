@@ -1,24 +1,28 @@
-# entrada não-interativa: lê o cargo da variável de ambiente COLETA_CARGO e coleta.
+# entrada não-interativa: lê o cargo e as fontes de variáveis de ambiente e coleta.
 # Serve para rodar de forma automatizada (agendador local, CI, etc.).
+#   COLETA_CARGO  -> cargo a pesquisar (padrão "desenvolvedor")
+#   COLETA_FONTES -> fontes separadas por vírgula (padrão "remotive,remoteok")
 import os
 import sys
 
 # garante que a raiz do projeto esteja no sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scraper.coletor import coletar
+from fontes import coletar_de, nomes
 from exporter.excel import salvar_excel
 from database.db import iniciar_banco, registrar_pesquisa, salvar_vagas
 
 
 def main():
     cargo = os.getenv("COLETA_CARGO", "desenvolvedor").strip()
+    fontes_env = os.getenv("COLETA_FONTES", "remotive,remoteok")
+    fontes_escolhidas = [n.strip() for n in fontes_env.split(",") if n.strip()] or nomes()
 
     iniciar_banco()
     pesquisa_id = registrar_pesquisa(cargo)
 
-    print(f"Coletando vagas para: {cargo}")
-    vagas = coletar(cargo)
+    print(f"Coletando '{cargo}' em: {', '.join(fontes_escolhidas)}")
+    vagas = coletar_de(cargo, fontes_escolhidas)
 
     if not vagas:
         print("Nenhuma vaga encontrada.")
