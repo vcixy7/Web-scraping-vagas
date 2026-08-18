@@ -1,0 +1,36 @@
+# MODELO de automação (Fase 9) — NÃO habilitado por padrão.
+#
+# Aviso: rodar scraping de sites de terceiros de forma automatizada/agendada pode
+# violar os termos de uso do site. Este arquivo é um exemplo de estudo. Ele está
+# configurado para rodar apenas manualmente (workflow_dispatch); o agendamento
+# (schedule) está comentado de propósito. Habilite por sua conta e risco.
+
+name: Coleta agendada (modelo)
+
+on:
+  workflow_dispatch:
+    inputs:
+      cargo:
+        description: "Cargo a pesquisar"
+        default: "desenvolvedor python"
+  # schedule:
+  #   - cron: "0 9 * * 1"   # exemplo: toda segunda-feira, 09:00 UTC
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar a coleta (headless)
+        env:
+          HEADLESS: "1"
+          COLETA_CARGO: ${{ github.event.inputs.cargo }}
+        run: python scripts/coleta_agendada.py
