@@ -1,8 +1,8 @@
 # Web scraping de vagas
 
-Projeto pessoal que fiz para praticar automação e coleta de dados com Python. Ele abre o Indeed, pesquisa por um cargo que você digita no terminal e junta as vagas encontradas em uma planilha do Excel.
+Projeto pessoal que fiz para praticar automação e coleta de dados com Python. Ele abre o Indeed, pesquisa por um cargo que você informa e guarda as vagas encontradas — em um banco SQLite e também em uma planilha do Excel.
 
-Comecei com um script único e fui separando o código em módulos conforme foi crescendo. Ainda está em evolução — a ideia é chegar em um fluxo mais completo, com banco de dados, uma interface e algumas análises —, mas por enquanto o que já funciona bem é a parte de coletar e exportar.
+Comecei com um script único que só exportava para o Excel e fui separando o código em módulos conforme foi crescendo. Hoje ele já guarda as vagas em banco (sem duplicar), tem um relatório no terminal e uma interface web simples. Ainda está em evolução, mas essa base já funciona bem.
 
 ## O que já funciona
 
@@ -12,6 +12,7 @@ Comecei com um script único e fui separando o código em módulos conforme foi 
 - Salva tudo em um banco SQLite (`data/vagas.db`) e não repete vagas que já foram guardadas (usa o link como referência).
 - Também exporta o resultado para um arquivo `vagas.xlsx`.
 - Tem um relatório no terminal (`python relatorio.py`) com totais, empresas com mais vagas, distribuição por estado e salário médio.
+- Tem também uma interface web simples (Streamlit) para pesquisar e ver os resultados e um painel com os números.
 
 ## Como rodar
 
@@ -42,23 +43,34 @@ Depois de coletar, dá para ver um resumo do que está no banco:
 python relatorio.py
 ```
 
+Se preferir uma tela em vez do terminal, tem também uma interface simples:
+
+```bash
+pip install streamlit
+streamlit run streamlit_app.py
+```
+
+Ela abre no navegador uma página onde você digita o cargo, clica em **Pesquisar** e vê as vagas coletadas, mais um resumo com os totais e alguns gráficos.
+
 ## Como o projeto está organizado
 
 ```
 main/
   main.py       # ponto de entrada: pede o cargo, monta a busca e junta tudo
 scraper/
-  browser.py    # sobe o Chrome com o Selenium
-  parser.py     # varre os cards da página e extrai os dados de cada vaga
-  util.py       # funções de apoio: UF, salário e formatação em R$
+  browser.py       # sobe o Chrome com o Selenium
+  parser.py        # varre os cards da página e extrai os dados de cada vaga
+  coletor.py       # junta browser + parser: faz a busca e devolve as vagas
+  util.py          # funções de apoio: UF, salário e formatação em R$
 database/
-  db.py         # cria o banco SQLite e salva as vagas (sem duplicar)
-  consultas.py  # consultas de leitura usadas pelo relatório
+  db.py            # cria o banco SQLite e salva as vagas (sem duplicar)
+  consultas.py     # consultas de leitura usadas pelo relatório e pela interface
 exporter/
-  excel.py      # salva a lista de vagas no Excel
-relatorio.py    # mostra um resumo das vagas guardadas no banco
+  excel.py         # salva a lista de vagas no Excel
+streamlit_app.py   # interface web: pesquisa + painel com os números
+relatorio.py       # resumo das vagas guardadas no banco (no terminal)
 data/
-  vagas.db      # banco criado na primeira execução (não versionado)
+  vagas.db         # banco criado na primeira execução (não versionado)
 ```
 
 ## Tecnologias
@@ -69,10 +81,9 @@ Python 3, Selenium (automação do navegador), Pandas, OpenPyXL (geração do Ex
 
 Coisas que pretendo fazer conforme for aprendendo:
 
-- Uma interface simples para pesquisar sem precisar do terminal (provavelmente com Streamlit).
-- Um histórico das pesquisas já feitas (a tabela `pesquisas` já vai sendo gravada a cada busca).
+- Uma tela para consultar e filtrar o histórico das pesquisas já feitas (a tabela `pesquisas` já vai sendo gravada a cada busca).
 - Identificar as tecnologias citadas nas descrições (Java, Python, SQL...) para ver o que aparece com mais frequência.
-- Alguns gráficos e análises em cima dos dados coletados.
+- Melhorar as análises e os gráficos (por enquanto o painel mostra o básico).
 
 ## Observações
 
