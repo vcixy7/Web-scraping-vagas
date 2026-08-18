@@ -9,7 +9,8 @@ Comecei com um script único e fui separando o código em módulos conforme foi 
 - Busca por cargo, informado pelo usuário no terminal.
 - Para cada vaga, coleta título, empresa, local, estado (UF), salário e link.
 - Um tratamento básico dos dados: extrai a UF a partir do texto do local e normaliza o salário — junta faixas pela média, converte valores por ano/hora/dia para o mês e formata em reais.
-- Exporta o resultado para um arquivo `vagas.xlsx`.
+- Salva tudo em um banco SQLite (`data/vagas.db`) e não repete vagas que já foram guardadas (usa o link como referência).
+- Também exporta o resultado para um arquivo `vagas.xlsx`.
 
 ## Como rodar
 
@@ -38,13 +39,17 @@ O programa pede o cargo, abre o navegador, faz a coleta e salva o `vagas.xlsx` n
 
 ```
 main/
-  main.py       # ponto de entrada: pede o cargo, monta a busca e chama o resto
+  main.py       # ponto de entrada: pede o cargo, monta a busca e junta tudo
 scraper/
   browser.py    # sobe o Chrome com o Selenium
   parser.py     # varre os cards da página e extrai os dados de cada vaga
   util.py       # funções de apoio: UF, salário e formatação em R$
+database/
+  db.py         # cria o banco SQLite e salva as vagas (sem duplicar)
 exporter/
   excel.py      # salva a lista de vagas no Excel
+data/
+  vagas.db      # banco criado na primeira execução (não versionado)
 ```
 
 ## Tecnologias
@@ -55,9 +60,8 @@ Python 3, Selenium (automação do navegador), Pandas, OpenPyXL (geração do Ex
 
 Coisas que pretendo fazer conforme for aprendendo:
 
-- Guardar as vagas em um banco de dados (começando com SQLite), em vez de depender só do Excel.
-- Evitar salvar a mesma vaga duas vezes, usando o link como referência.
 - Uma interface simples para pesquisar sem precisar do terminal (provavelmente com Streamlit).
+- Um histórico das pesquisas já feitas (a tabela `pesquisas` já vai sendo gravada a cada busca).
 - Identificar as tecnologias citadas nas descrições (Java, Python, SQL...) para ver o que aparece com mais frequência.
 - Alguns gráficos e análises em cima dos dados coletados.
 

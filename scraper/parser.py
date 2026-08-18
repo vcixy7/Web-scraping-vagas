@@ -70,7 +70,8 @@ def parse_vagas(driver):
                     continue
 
             # Salário
-            salario = "Sem informação"
+            salario_texto = "Sem informação"
+            salario_valor = None
             raw_salario = ""
             for sel in ("[data-testid='attribute_snippet_testid']", ".salary-snippet-container", ".salaryText"):
                 try:
@@ -81,13 +82,13 @@ def parse_vagas(driver):
                 except:
                     continue
 
-            # Se houver números no texto, tentar parsear e calcular valor médio mensal
+            # Se houver números no texto, tentar extrair um valor médio mensal
             if raw_salario and any(ch.isdigit() for ch in raw_salario):
-                avg = parse_salario(raw_salario)
-                if avg:
-                    salario = f"{format_brl(avg)} (médio/mês)"
+                salario_valor = parse_salario(raw_salario)
+                if salario_valor:
+                    salario_texto = f"{format_brl(salario_valor)} (médio/mês)"
                 else:
-                    salario = "Não tem essa informação"
+                    salario_texto = "Não tem essa informação"
 
             # Link da vaga
             link = ""
@@ -107,12 +108,13 @@ def parse_vagas(driver):
                 link = "Não disponível"
 
             vagas.append({
-                "Título": titulo or "Não informado",
-                "Empresa": empresa or "Não informado",
-                "Local": local or "Não informado",
-                "Estado (UF)": extrair_estado(local),
-                "Salário": salario,
-                "Link": link,
+                "titulo": titulo or "Não informado",
+                "empresa": empresa or "Não informado",
+                "local": local or "Não informado",
+                "estado": extrair_estado(local),
+                "salario": salario_valor,        # valor médio mensal (float) ou None
+                "salario_texto": salario_texto,  # versão exibível ("R$ ... (médio/mês)")
+                "url": link,
             })
 
         except Exception:

@@ -14,3 +14,7 @@ env/
 
 # Saídas geradas
 *.xlsx
+
+# Banco de dados local
+data/
+*.db
