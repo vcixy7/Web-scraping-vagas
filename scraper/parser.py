@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
-from .util import extrair_estado, parse_salario, format_brl
+from .util import extrair_estado, normalizar_modalidade, parse_salario, format_brl
+from .tecnologias import extrair_tecnologias
 import time
 
 def parse_vagas(driver):
@@ -38,6 +39,12 @@ def parse_vagas(driver):
 
     for card in cards:
         try:
+            # texto completo do card, usado para modalidade e tecnologias
+            try:
+                texto_card = card.text or ""
+            except:
+                texto_card = ""
+
             # Título: várias tentativas
             titulo = ""
             try:
@@ -46,8 +53,8 @@ def parse_vagas(driver):
                 try:
                     titulo = card.find_element(By.CSS_SELECTOR, ".jobTitle, .job-title, .title").text
                 except:
-                    texto = card.text.split("\n")
-                    titulo = texto[0] if texto else ""
+                    linhas = texto_card.split("\n")
+                    titulo = linhas[0] if linhas else ""
 
             # Empresa: tentativas com seletores comuns
             empresa = ""
@@ -107,13 +114,19 @@ def parse_vagas(driver):
             if not link:
                 link = "Não disponível"
 
+            # Modalidade e tecnologias, a partir do que dá para ler no card
+            modalidade = normalizar_modalidade(f"{local} {titulo} {texto_card}")
+            tecnologias = extrair_tecnologias(f"{titulo} {texto_card}")
+
             vagas.append({
                 "titulo": titulo or "Não informado",
                 "empresa": empresa or "Não informado",
                 "local": local or "Não informado",
                 "estado": extrair_estado(local),
+                "modalidade": modalidade,
                 "salario": salario_valor,        # valor médio mensal (float) ou None
                 "salario_texto": salario_texto,  # versão exibível ("R$ ... (médio/mês)")
+                "tecnologias": tecnologias,      # lista de tecnologias encontradas
                 "url": link,
             })
 

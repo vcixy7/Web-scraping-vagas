@@ -9,6 +9,15 @@ from database import consultas
 from scraper.util import format_brl
 
 
+def _lista(titulo, linhas, vazio="(sem dados)"):
+    print(f"\n{titulo}:")
+    if not linhas:
+        print(f"  {vazio}")
+        return
+    for nome, qtd in linhas:
+        print(f"  {qtd:>3}  {nome}")
+
+
 def main():
     iniciar_banco()  # garante que as tabelas existam, mesmo sem ter coletado ainda
 
@@ -24,17 +33,20 @@ def main():
     media = consultas.salario_medio()
     print(f"Salário médio:    {format_brl(media) if media else 'sem dados suficientes'}")
 
-    print("\nEmpresas com mais vagas:")
-    for nome, qtd in consultas.top_empresas():
-        print(f"  {qtd:>3}  {nome}")
+    _lista("Empresas com mais vagas", consultas.top_empresas())
+    _lista("Vagas por estado", consultas.vagas_por_estado())
+    _lista("Vagas por modalidade", consultas.vagas_por_modalidade())
+    _lista("Tecnologias mais pedidas", consultas.top_tecnologias())
+    _lista("Vagas coletadas por dia", consultas.vagas_por_dia())
 
-    print("\nVagas por estado:")
-    for estado, qtd in consultas.vagas_por_estado():
-        print(f"  {qtd:>3}  {estado}")
-
-    print("\nÚltimas pesquisas:")
-    for cargo, quando in consultas.ultimas_pesquisas():
-        print(f"  {quando}  ->  {cargo}")
+    print("\nHistórico de pesquisas:")
+    historico = consultas.historico_pesquisas()
+    if not historico:
+        print("  (sem dados)")
+    for _id, cargo, quando, total, novas in historico:
+        total = total if total is not None else "?"
+        novas = novas if novas is not None else "?"
+        print(f"  {quando}  ->  {cargo}  ({total} coletadas, {novas} novas)")
 
 
 if __name__ == "__main__":

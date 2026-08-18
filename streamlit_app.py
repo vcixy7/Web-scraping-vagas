@@ -20,24 +20,39 @@ iniciar_banco()
 st.title("Coleta de vagas")
 st.caption("Pesquise um cargo e colete as vagas do Indeed. Os resultados ficam guardados no banco.")
 
+
+def tabela_vagas(vagas):
+    return pd.DataFrame([{
+        "Título": v.get("titulo"),
+        "Empresa": v.get("empresa"),
+        "Local": v.get("local"),
+        "UF": v.get("estado"),
+        "Modalidade": v.get("modalidade"),
+        "Salário": v.get("salario_texto"),
+        "Tecnologias": ", ".join(v.get("tecnologias", [])),
+        "Link": v.get("url"),
+    } for v in vagas])
+
+
+# --- pesquisa ---
 cargo = st.text_input("Cargo", placeholder="ex.: desenvolvedor python")
 
 if st.button("Pesquisar", type="primary") and cargo.strip():
     with st.spinner("Coletando vagas... o navegador vai abrir, aguarde."):
-        registrar_pesquisa(cargo.strip())
+        pesquisa_id = registrar_pesquisa(cargo.strip())
         vagas = coletar(cargo.strip())
 
     if vagas:
-        novas, duplicadas = salvar_vagas(vagas)
+        novas, duplicadas = salvar_vagas(vagas, pesquisa_id=pesquisa_id)
         salvar_excel(vagas)
         st.success(f"{len(vagas)} vagas coletadas — {novas} novas, {duplicadas} já estavam no banco.")
-        tabela = pd.DataFrame(vagas)[["titulo", "empresa", "local", "estado", "salario_texto", "url"]]
-        tabela.columns = ["Título", "Empresa", "Local", "UF", "Salário", "Link"]
-        st.dataframe(tabela, use_container_width=True, hide_index=True)
+        st.dataframe(tabela_vagas(vagas), use_container_width=True, hide_index=True)
     else:
         st.warning("Nenhuma vaga encontrada.")
 
 st.divider()
+
+# --- resumo do banco ---
 st.header("Resumo do banco")
 
 col1, col2, col3 = st.columns(3)
@@ -46,14 +61,53 @@ col2.metric("Empresas", consultas.total_empresas())
 media = consultas.salario_medio()
 col3.metric("Salário médio", format_brl(media) if media else "sem dados")
 
-por_estado = consultas.vagas_por_estado()
-if por_estado:
-    st.subheader("Vagas por estado")
-    df_estado = pd.DataFrame(por_estado, columns=["Estado", "Vagas"]).set_index("Estado")
-    st.bar_chart(df_estado)
+col_esq, col_dir = st.columns(2)
 
-top = consultas.top_empresas(limite=10)
-if top:
-    st.subheader("Empresas com mais vagas")
-    df_empresas = pd.DataFrame(top, columns=["Empresa", "Vagas"]).set_index("Empresa")
-    st.bar_chart(df_empresas)
+with col_esq:
+    por_estado = consultas.vagas_por_estado()
+    if por_estado:
+        st.subheader("Vagas por estado")
+        st.bar_chart(pd.DataFrame(por_estado, columns=["Estado", "Vagas"]).set_index("Estado"))
+
+    por_modalidade = consultas.vagas_por_modalidade()
+    if por_modalidade:
+        st.subheader("Vagas por modalidade")
+        st.bar_chart(pd.DataFrame(por_modalidade, columns=["Modalidade", "Vagas"]).set_index("Modalidade"))
+
+with col_dir:
+    tecnologias = consultas.top_tecnologias(limite=10)
+    if tecnologias:
+        st.subheader("Tecnologias mais pedidas")
+        st.bar_chart(pd.DataFrame(tecnologias, columns=["Tecnologia", "Vagas"]).set_index("Tecnologia"))
+
+    top = consultas.top_empresas(limite=10)
+    if top:
+        st.subheader("Empresas com mais vagas")
+        st.bar_chart(pd.DataFrame(top, columns=["Empresa", "Vagas"]).set_index("Empresa"))
+
+por_dia = consultas.vagas_por_dia()
+if por_dia and len(por_dia) > 1:
+    st.subheader("Vagas coletadas ao longo do tempo")
+    st.line_chart(pd.DataFrame(por_dia, columns=["Dia", "Vagas"]).set_index("Dia"))
+
+st.divider()
+
+# --- histórico de pesquisas ---
+st.header("Histórico de pesquisas")
+
+historico = consultas.historico_pesquisas()
+if not historico:
+    st.write("Nenhuma pesquisa registrada ainda.")
+else:
+    df_hist = pd.DataFrame(historico, columns=["id", "Cargo", "Quando", "Coletadas", "Novas"])
+    st.dataframe(df_hist.drop(columns=["id"]), use_container_width=True, hide_index=True)
+
+    opcoes = {f"{cargo} — {quando}": pid for pid, cargo, quando, _t, _n in historico}
+    escolha = st.selectbox("Ver as vagas de uma pesquisa", list(opcoes.keys()))
+    if escolha:
+        vagas = consultas.vagas_da_pesquisa(opcoes[escolha])
+        if vagas:
+            df = pd.DataFrame(vagas, columns=["Título", "Empresa", "Local", "UF", "Modalidade", "Salário", "Link"])
+            st.dataframe(df, use_container_width=True, hide_index=True)
+        else:
+            st.write("Essa pesquisa não guardou vagas novas (podem ter sido todas duplicadas).")

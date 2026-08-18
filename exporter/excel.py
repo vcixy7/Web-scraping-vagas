@@ -1,18 +1,21 @@
 # exportação das vagas para uma planilha Excel usando pandas
 import pandas as pd
 
-# de qual campo interno vem cada coluna do Excel (nesta ordem)
-COLUNAS = {
-    "titulo": "Título",
-    "empresa": "Empresa",
-    "local": "Local",
-    "estado": "Estado (UF)",
-    "salario_texto": "Salário",
-    "url": "Link",
-}
+COLUNAS = ["Título", "Empresa", "Local", "Estado (UF)", "Modalidade", "Salário", "Tecnologias", "Link"]
 
 
 def salvar_excel(vagas, nome_arquivo="vagas.xlsx"):
-    linhas = [{coluna: vaga.get(campo) for campo, coluna in COLUNAS.items()} for vaga in vagas]
-    df = pd.DataFrame(linhas, columns=list(COLUNAS.values()))
+    linhas = []
+    for vaga in vagas:
+        linhas.append({
+            "Título": vaga.get("titulo"),
+            "Empresa": vaga.get("empresa"),
+            "Local": vaga.get("local"),
+            "Estado (UF)": vaga.get("estado"),
+            "Modalidade": vaga.get("modalidade"),
+            "Salário": vaga.get("salario_texto"),
+            "Tecnologias": ", ".join(vaga.get("tecnologias", [])),
+            "Link": vaga.get("url"),
+        })
+    df = pd.DataFrame(linhas, columns=COLUNAS)
     df.to_excel(nome_arquivo, index=False)

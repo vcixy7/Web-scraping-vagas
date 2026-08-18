@@ -1,4 +1,4 @@
-# consultas de leitura no banco, usadas pelo relatório (e depois pela interface)
+# consultas de leitura no banco, usadas pelo relatório e pela interface
 from .db import get_conexao
 
 
@@ -55,11 +55,78 @@ def vagas_por_estado():
     return linhas
 
 
-def ultimas_pesquisas(limite=5):
+def vagas_por_modalidade():
     conexao = get_conexao()
     linhas = conexao.execute(
-        "SELECT cargo, criada_em FROM pesquisas ORDER BY id DESC LIMIT ?",
+        """
+        SELECT COALESCE(modalidade, 'Não informado') AS modalidade, COUNT(*) AS qtd
+        FROM vagas
+        GROUP BY modalidade
+        ORDER BY qtd DESC
+        """
+    ).fetchall()
+    conexao.close()
+    return linhas
+
+
+def top_tecnologias(limite=10):
+    conexao = get_conexao()
+    linhas = conexao.execute(
+        """
+        SELECT t.nome, COUNT(vt.vaga_id) AS qtd
+        FROM tecnologias t
+        JOIN vaga_tecnologias vt ON vt.tecnologia_id = t.id
+        GROUP BY t.id
+        ORDER BY qtd DESC, t.nome
+        LIMIT ?
+        """,
         (limite,),
+    ).fetchall()
+    conexao.close()
+    return linhas
+
+
+def vagas_por_dia():
+    conexao = get_conexao()
+    linhas = conexao.execute(
+        """
+        SELECT substr(coletada_em, 1, 10) AS dia, COUNT(*) AS qtd
+        FROM vagas
+        WHERE coletada_em IS NOT NULL
+        GROUP BY dia
+        ORDER BY dia
+        """
+    ).fetchall()
+    conexao.close()
+    return linhas
+
+
+def historico_pesquisas(limite=15):
+    conexao = get_conexao()
+    linhas = conexao.execute(
+        """
+        SELECT id, cargo, criada_em, total_coletadas, novas
+        FROM pesquisas
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (limite,),
+    ).fetchall()
+    conexao.close()
+    return linhas
+
+
+def vagas_da_pesquisa(pesquisa_id):
+    conexao = get_conexao()
+    linhas = conexao.execute(
+        """
+        SELECT v.titulo, e.nome, v.local, v.estado, v.modalidade, v.salario_texto, v.url
+        FROM vagas v
+        JOIN empresas e ON e.id = v.empresa_id
+        WHERE v.pesquisa_id = ?
+        ORDER BY v.id
+        """,
+        (pesquisa_id,),
     ).fetchall()
     conexao.close()
     return linhas

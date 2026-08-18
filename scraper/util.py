@@ -14,16 +14,33 @@ def extrair_estado(local):
     return "Não informado"
 
 
+def normalizar_modalidade(texto):
+    """Descobre a modalidade de trabalho a partir do texto da vaga."""
+    if not texto:
+        return "Não informado"
+
+    t = texto.lower()
+
+    if any(p in t for p in ("remoto", "home office", "home-office", "à distância", "a distancia", "teletrabalho")):
+        return "Remoto"
+    if any(p in t for p in ("híbrido", "hibrido")):
+        return "Híbrido"
+    if any(p in t for p in ("presencial", "no local")):
+        return "Presencial"
+
+    return "Não informado"
+
+
 def _normalize_amount_text(text):
     t = text.strip()
     t = t.replace('R$', '').replace('\xa0', '').strip()
-    
+
     if '.' in t and ',' in t:
         t = t.replace('.', '').replace(',', '.')
     elif ',' in t and '.' not in t:
         t = t.replace(',', '.')
     else:
-        
+
         t = t.replace('.', '')
     try:
         return float(t)

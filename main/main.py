@@ -16,7 +16,7 @@ def main():
         return
 
     iniciar_banco()
-    registrar_pesquisa(cargo)
+    pesquisa_id = registrar_pesquisa(cargo)
 
     print("\nBuscando vagas...")
     vagas = coletar(cargo)
@@ -25,7 +25,7 @@ def main():
         print("Nenhuma vaga encontrada.")
         return
 
-    novas, duplicadas = salvar_vagas(vagas)
+    novas, duplicadas = salvar_vagas(vagas, pesquisa_id=pesquisa_id)
     salvar_excel(vagas)
 
     print(f"\n{len(vagas)} vagas coletadas.")
