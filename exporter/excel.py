@@ -1,12 +1,12 @@
 # exportação das vagas para uma planilha Excel usando pandas
 import pandas as pd
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font
+from openpyxl.styles import Font, Alignment
 
 COLUNAS = ["Título", "Empresa", "Local", "Estado (UF)", "Modalidade", "Salário", "Tecnologias", "Fonte", "Link"]
 
-# largura máxima de uma coluna (evita que o link deixe a planilha gigante)
-LARGURA_MAXIMA = 80
+# largura máxima de uma coluna; o que passar disso quebra em várias linhas
+LARGURA_MAXIMA = 50
 
 
 def salvar_excel(vagas, nome_arquivo="vagas.xlsx"):
@@ -29,13 +29,22 @@ def salvar_excel(vagas, nome_arquivo="vagas.xlsx"):
         df.to_excel(writer, index=False, sheet_name="Vagas")
         planilha = writer.sheets["Vagas"]
 
-        # cabeçalho em negrito
-        for celula in planilha[1]:
-            celula.font = Font(bold=True)
-
-        # ajusta a largura de cada coluna ao maior texto (cabeçalho ou valores)
+        # largura de cada coluna: cabe o texto, com um teto (o resto quebra em linhas)
         for i, coluna in enumerate(df.columns, start=1):
             tamanhos = [len(str(coluna))]
             tamanhos += [len(str(valor)) for valor in df[coluna] if valor is not None]
             largura = min(max(tamanhos) + 2, LARGURA_MAXIMA)
             planilha.column_dimensions[get_column_letter(i)].width = largura
+
+        # quebra de texto em todas as células, para nada ficar cortado
+        quebra = Alignment(wrap_text=True, vertical="top")
+        for linha in planilha.iter_rows():
+            for celula in linha:
+                celula.alignment = quebra
+
+        # cabeçalho em negrito
+        for celula in planilha[1]:
+            celula.font = Font(bold=True)
+
+        # mantém o cabeçalho visível ao rolar a planilha
+        planilha.freeze_panes = "A2"
